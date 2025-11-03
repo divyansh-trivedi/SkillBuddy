@@ -6,7 +6,7 @@ const app = express();
 // **IMPORTANT: Update 'https://your-vercel-frontend-url.vercel.app' with your ACTUAL Vercel URL later**
 const allowedOrigins = [
   'http://localhost:3000', // For local frontend development
-  'https://your-vercel-frontend-url.vercel.app' // This will be your Vercel frontend URL
+  'https://skillbuddy-frontend.onrender.com' // This will be your Vercel frontend URL
 ];
 
 app.use(cors({
