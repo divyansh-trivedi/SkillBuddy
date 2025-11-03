@@ -16,7 +16,7 @@ const Login = () => {
         setMessage('');
         setLoading(true);
         try {
-            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/users/login`, {
+            const res = await fetch('https://skillbuddy-backend.onrender.com/api/users/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(form)

@@ -16,7 +16,7 @@ const Signup = () => {
         setMessage('');
         setLoading(true);
         try {
-            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/users/register`, {
+            const res = await fetch('https://skillbuddy-backend.onrender.com/api/users/register', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -30,7 +30,7 @@ const Signup = () => {
                 setMessage(data.message);
                 setForm({ username: '', email: '', password: '' });
                 try {
-                    const loginRes = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/users/login`, {
+                    const loginRes = await fetch('https://skillbuddy-backend.onrender.com/api/users/login', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ email: form.email, password: form.password })
