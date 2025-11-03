@@ -27,7 +27,7 @@ const Roadmap = () => {
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token || !name) return;
-    fetch(`https://server-210v.onrender.com/api/progress/${encodeURIComponent(name)}`, {
+    fetch(`${import.meta.env.VITE_API_BASE_URL}/api/progress/${encodeURIComponent(name)}`, {
       headers: { 'Authorization': `Bearer ${token}` }
     })
       .then(res => res.json())
@@ -85,7 +85,7 @@ const Roadmap = () => {
     setStartMsg('');
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch(`https://server-210v.onrender.com/api/progress/${encodeURIComponent(name)}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/progress/${encodeURIComponent(name)}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,

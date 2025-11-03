@@ -70,7 +70,7 @@ const Dashboard = () => {
     const fetchProgress = async () => {
       setLoading(true);
       try {
-        const res = await fetch('https://server-210v.onrender.com/api/progress', {
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/progress`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         const data = await res.json();
