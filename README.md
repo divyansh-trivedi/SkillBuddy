@@ -26,7 +26,6 @@ SkillBuddy was created to empower learners with structured guidance, interactive
 |----------------|--------------------------------------------|--------------------------------------------------|
 | Frontend       | React (Vite), Tailwind CSS, React Router   | UI, navigation, and styling                      |
 | Backend        | Node.js, Express.js                        | REST API development (auth, quiz, roadmap, etc.) |
-| Database       | MongoDB                                    | Stores users, quizzes, roadmaps, progress        |
 | Authentication | JWT (JSON Web Tokens)                      | Secure session handling and route protection     |
 | AI Integration | Google Gemini API                          | AI chat guidance                                 |
 | Hosting        | Vercel (Frontend), Render (Backend)        | Deployment platforms                             |
