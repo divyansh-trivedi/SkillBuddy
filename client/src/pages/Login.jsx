@@ -1,5 +1,7 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
+import { API_BASE_URL } from '../config';
+import { Mail, Lock, ArrowRight, Loader2 } from "lucide-react";
 
 const Login = () => {
     const [form, setForm] = useState({ email: '', password: '' });
@@ -16,97 +18,93 @@ const Login = () => {
         setMessage('');
         setLoading(true);
         try {
-            const res = await fetch('https://skillbuddy-backend.onrender.com/api/users/login', {
+            const res = await fetch(`${API_BASE_URL}/api/users/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(form)
             });
             const data = await res.json();
             if (res.ok) {
-                setMessage(data.message);
                 localStorage.setItem('token', data.token);
                 localStorage.setItem('user', JSON.stringify(data.user));
                 navigate('/dashboard');
-                // Optionally redirect or update UI here
             } else {
                 setMessage(data.error || 'Login failed');
             }
         } catch (err) {
-            setMessage('Network error');
+            setMessage('Network error. Please try again.');
         }
         setLoading(false);
     };
 
     return (
-        <div className="min-h-screen font-sans bg-gray-100 flex flex-col">
-            <div className="flex-1 flex items-center justify-center w-full h-full">
-                <div className="w-full max-w-6xl grid grid-cols-1 md:grid-cols-2 gap-8 p-6 h-full animate-fade-in">
-                    {/* Left: Form Section */}
-                    <div className="flex flex-col justify-start bg-gray-100 w-full px-6 h-full animate-slide-in-left">
+        <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6 font-sans">
+            <div className="w-full max-w-md">
+                
+                <div className="text-center mb-8">
+                    <Link to="/" className="inline-flex items-center gap-2 mb-6">
+                        <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-indigo-500/20">S</div>
+                        <span className="text-2xl font-bold text-white tracking-tight">SkillBuddy</span>
+                    </Link>
+                    <h2 className="text-2xl font-bold text-white mb-2">Welcome back</h2>
+                    <p className="text-slate-400">Enter your credentials to access your account.</p>
+                </div>
 
-                        <header className="w-full flex flex-row items-center justify-center gap-4 py-4 ">
-                            <img src="/Logo.png" alt="SkillBuddy Logo" className="w-30 h-30" />
-                        </header>
-
-                        <form className="space-y-5 mt-4" onSubmit={handleSubmit}>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">Email address</label>
+                <div className="glass-card p-8 rounded-2xl">
+                    <form className="space-y-5" onSubmit={handleSubmit}>
+                        <div>
+                            <label className="block text-sm font-medium text-slate-300 mb-1.5">Email address</label>
+                            <div className="relative">
+                                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
                                 <input
                                     type="email"
                                     name="email"
                                     value={form.email}
                                     onChange={handleChange}
-                                    placeholder="Enter your email"
-                                    className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600"
+                                    className="w-full bg-slate-900 border border-slate-700 rounded-lg py-2.5 pl-10 pr-4 text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all placeholder-slate-600"
+                                    placeholder="name@example.com"
                                     required
                                 />
                             </div>
+                        </div>
 
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">Password</label>
+                        <div>
+                            <div className="flex justify-between items-center mb-1.5">
+                                <label className="block text-sm font-medium text-slate-300">Password</label>
+                                <a href="#" className="text-xs text-indigo-400 hover:text-indigo-300">Forgot password?</a>
+                            </div>
+                            <div className="relative">
+                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
                                 <input
                                     type="password"
                                     name="password"
                                     value={form.password}
                                     onChange={handleChange}
-                                    placeholder="Enter your password"
-                                    className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600"
+                                    className="w-full bg-slate-900 border border-slate-700 rounded-lg py-2.5 pl-10 pr-4 text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all placeholder-slate-600"
+                                    placeholder="••••••••"
                                     required
                                 />
                             </div>
-                            <button
-                                type="submit"
-                                className="w-full bg-green-700 text-white py-2 rounded-md font-medium hover:bg-green-800 transition mt-6"
-                                disabled={loading}
-                            >
-                                {loading ? 'Logging in...' : 'Login'}
-                            </button>
-                            {message && (
-                                <div className={`mt-2 text-center text-sm ${message.includes('success') ? 'text-green-600' : 'text-red-600'}`}>
-                                    {message}
-                                </div>
-                            )}
-                        </form>
-
-                        {/* Divider */}
-                        <div className="my-6 flex items-center">
-                            <hr className="flex-grow border-gray-300" />
-                            <span className="mx-4 text-gray-400">or</span>
-                            <hr className="flex-grow border-gray-300" />
                         </div>
-                        {/* Sign in Redirect */}
-                        <p className="text-sm text-center text-gray-700 mt-4">
-                            Don't have an account? <a href="/login" className="text-blue-600 font-medium">Sign Up</a>
-                        </p>
-                    </div>
 
-                    {/* Right: Logo Section */}
-                    <div className="hidden md:flex flex-col items-center justify-center bg-gray-100 p-6 h-full animate-slide-in-right">
-                        <img
-                            src="/login-bg1.png"
-                            alt="SkillBuddy Logo"
-                            className="opacity-90 w-full h-screen rounded-lg shadow-lg"
-                        />
+                        {message && (
+                            <div className={`p-3 rounded-lg text-sm ${message.includes('success') ? 'bg-green-500/10 text-green-400 border border-green-500/20' : 'bg-red-500/10 text-red-400 border border-red-500/20'}`}>
+                                {message}
+                            </div>
+                        )}
+
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="w-full btn-primary flex items-center justify-center gap-2 py-2.5"
+                        >
+                            {loading ? <Loader2 className="animate-spin" size={20} /> : 'Sign In'}
+                            {!loading && <ArrowRight size={18} />}
+                        </button>
+                    </form>
+
+                    <div className="mt-6 text-center text-sm text-slate-400">
+                        Don't have an account? <Link to="/signup" className="text-indigo-400 hover:text-indigo-300 font-medium">Create account</Link>
                     </div>
                 </div>
             </div>

@@ -1,24 +1,32 @@
-import React, { useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { quizzes } from './quizzes';
-import Navbar from '../components/Navbar';
+import React, { useState, useEffect } from 'react';
+import { useParams, Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { ChevronLeft, CheckCircle2, XCircle, Trophy, RefreshCw } from 'lucide-react';
+import { API_BASE_URL } from '../config';
 
 const Quiz = () => {
   const { topic } = useParams();
-  const quiz = quizzes[topic];
+  const [questions, setQuestions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [answers, setAnswers] = useState({});
   const [submitted, setSubmitted] = useState(false);
 
-  if (!quiz) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-700 via-gray-900 to-pink-900 text-white flex flex-col">
-        <Navbar />
-        <div className="flex-1 flex items-center justify-center">
-          <div className="text-2xl">No quiz found for this topic.</div>
-        </div>
-      </div>
-    );
-  }
+  useEffect(() => {
+    const fetchQuiz = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/quizzes/${encodeURIComponent(topic)}`);
+        if (!response.ok) throw new Error('Failed to fetch quiz');
+        const data = await response.json();
+        setQuestions(data);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchQuiz();
+  }, [topic]);
 
   const handleChange = (idx, value) => {
     setAnswers({ ...answers, [idx]: value });
@@ -26,36 +34,74 @@ const Quiz = () => {
 
   const handleSubmit = () => {
     setSubmitted(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const getScore = () => {
     let score = 0;
-    quiz.forEach((q, idx) => {
-      if (q.type === 'true-false' || q.type === 'multiple-choice') {
+    questions.forEach((q, idx) => {
+      if (q.type === 'short-answer') {
+        if (typeof answers[idx] === 'string' && answers[idx].trim().toLowerCase() === q.correctAnswer.trim().toLowerCase()) score++;
+      } else {
         if (answers[idx] === q.correctAnswer) score++;
-      } else if (q.type === 'short-answer') {
-        if (
-          typeof answers[idx] === 'string' &&
-          answers[idx].trim().toLowerCase() === q.correctAnswer.trim().toLowerCase()
-        ) score++;
       }
     });
     return score;
   };
 
+  if (loading) return (
+    <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+      <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-indigo-500"></div>
+    </div>
+  );
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-700 via-gray-900 to-pink-900 text-white flex flex-col font-sans">
-      <div className="flex-1 flex items-center justify-center">
-        <div className="w-full max-w-2xl bg-slate-800 rounded-2xl shadow-2xl p-8 mt-8 mb-8">
-          <h2 className="text-2xl font-bold mb-6 text-center">{topic} Quiz</h2>
-          <form onSubmit={e => { e.preventDefault(); handleSubmit(); }}>
-            {quiz.map((q, idx) => (
-              <div key={idx} className="mb-8">
-                <div className="mb-2 font-semibold">Q{idx + 1}. {q.question}</div>
-                {q.type === 'multiple-choice' && (
-                  <div className="space-y-2">
-                    {q.options.map((opt, oidx) => (
-                      <label key={oidx} className="flex items-center gap-2 cursor-pointer">
+    <div className="min-h-screen bg-slate-950 pt-24 pb-12 px-6 font-sans">
+      <div className="max-w-3xl mx-auto">
+        
+        <Link to="/quizzes" className="inline-flex items-center gap-2 text-slate-400 hover:text-white mb-6 transition-colors">
+          <ChevronLeft size={16} /> Back to Quizzes
+        </Link>
+
+        <div className="glass-card rounded-2xl overflow-hidden mb-8">
+          <div className="bg-slate-900 border-b border-slate-800 p-8">
+            <h1 className="text-3xl font-bold text-white mb-2">{topic} Quiz</h1>
+            <p className="text-slate-400 text-sm">Answer all questions to test your mastery.</p>
+          </div>
+
+          <div className="p-8">
+            {submitted && (
+              <div className="mb-8 p-6 bg-indigo-600/10 border border-indigo-600/30 rounded-xl text-center">
+                <Trophy className="w-12 h-12 text-indigo-400 mx-auto mb-3" />
+                <h3 className="text-2xl font-bold text-white mb-1">
+                  You scored {getScore()} / {questions.length}
+                </h3>
+                <p className="text-slate-400 text-sm">Great effort! Review your answers below.</p>
+              </div>
+            )}
+
+            <form onSubmit={e => { e.preventDefault(); handleSubmit(); }} className="space-y-10">
+              {questions.map((q, idx) => (
+                <div key={idx} className="relative">
+                  <div className="flex items-start gap-4 mb-4">
+                    <span className="text-2xl font-bold text-slate-700 select-none">
+                      {String(idx + 1).padStart(2, '0')}
+                    </span>
+                    <h3 className="text-lg font-medium text-slate-200 mt-1">{q.question}</h3>
+                  </div>
+
+                  <div className="pl-10 space-y-3">
+                    {q.type === 'multiple-choice' && q.options.map((opt, oidx) => (
+                      <label 
+                        key={oidx} 
+                        className={`flex items-center gap-3 p-4 rounded-xl border transition-all cursor-pointer ${
+                          answers[idx] === opt 
+                            ? 'bg-indigo-600/20 border-indigo-500 text-white' 
+                            : 'bg-slate-900 border-slate-800 text-slate-400 hover:border-slate-700'
+                        } ${submitted && opt === q.correctAnswer ? '!bg-green-500/10 !border-green-500/50 !text-green-400' : ''}
+                          ${submitted && answers[idx] === opt && opt !== q.correctAnswer ? '!bg-red-500/10 !border-red-500/50 !text-red-400' : ''}
+                        `}
+                      >
                         <input
                           type="radio"
                           name={`q${idx}`}
@@ -63,87 +109,79 @@ const Quiz = () => {
                           disabled={submitted}
                           checked={answers[idx] === opt}
                           onChange={() => handleChange(idx, opt)}
-                          className="accent-pink-600"
+                          className="hidden"
                         />
+                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                          answers[idx] === opt ? 'border-indigo-500' : 'border-slate-600'
+                        }`}>
+                          {answers[idx] === opt && <div className="w-2.5 h-2.5 rounded-full bg-indigo-500" />}
+                        </div>
                         <span>{opt}</span>
                       </label>
                     ))}
+                    
+                    {q.type === 'true-false' && ['true', 'false'].map((val) => (
+                         <label 
+                         key={val} 
+                         className={`flex items-center gap-3 p-4 rounded-xl border transition-all cursor-pointer ${
+                           String(answers[idx]) === val 
+                             ? 'bg-indigo-600/20 border-indigo-500 text-white' 
+                             : 'bg-slate-900 border-slate-800 text-slate-400 hover:border-slate-700'
+                         }`}
+                       >
+                         <input
+                           type="radio"
+                           name={`q${idx}`}
+                           value={val === 'true'}
+                           disabled={submitted}
+                           checked={String(answers[idx]) === val}
+                           onChange={() => handleChange(idx, val === 'true')}
+                           className="hidden"
+                         />
+                         <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                           String(answers[idx]) === val ? 'border-indigo-500' : 'border-slate-600'
+                         }`}>
+                           {String(answers[idx]) === val && <div className="w-2.5 h-2.5 rounded-full bg-indigo-500" />}
+                         </div>
+                         <span className="capitalize">{val}</span>
+                       </label>
+                    ))}
                   </div>
-                )}
-                {q.type === 'true-false' && (
-                  <div className="space-x-4">
-                    <label className="inline-flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="radio"
-                        name={`q${idx}`}
-                        value="true"
-                        disabled={submitted}
-                        checked={answers[idx] === true}
-                        onChange={() => handleChange(idx, true)}
-                        className="accent-pink-600"
-                      />
-                      True
-                    </label>
-                    <label className="inline-flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="radio"
-                        name={`q${idx}`}
-                        value="false"
-                        disabled={submitted}
-                        checked={answers[idx] === false}
-                        onChange={() => handleChange(idx, false)}
-                        className="accent-pink-600"
-                      />
-                      False
-                    </label>
-                  </div>
-                )}
-                {q.type === 'short-answer' && (
-                  <input
-                    type="text"
-                    className="mt-2 w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 focus:outline-none focus:ring-2 focus:ring-pink-600 text-white"
-                    value={answers[idx] || ''}
-                    disabled={submitted}
-                    onChange={e => handleChange(idx, e.target.value)}
-                    placeholder="Your answer"
-                  />
-                )}
-                {submitted && (
-                  <div className={`mt-2 text-sm ${
-                    (q.type === 'short-answer'
-                      ? (answers[idx] && answers[idx].trim().toLowerCase() === q.correctAnswer.trim().toLowerCase())
-                      : answers[idx] === q.correctAnswer)
-                      ? 'text-green-400'
-                      : 'text-red-400'
-                  }`}>
-                    {answers[idx] === undefined || answers[idx] === ''
-                      ? 'No answer given.'
-                      : (q.type === 'short-answer'
-                        ? (answers[idx].trim().toLowerCase() === q.correctAnswer.trim().toLowerCase() ? 'Correct!' : 'Incorrect.')
-                        : (answers[idx] === q.correctAnswer ? 'Correct!' : 'Incorrect.'))}
-                    <span className="block text-slate-300 mt-1">{q.explanation}</span>
-                  </div>
-                )}
-              </div>
-            ))}
-            {!submitted && (
-              <button
-                type="submit"
-                className="w-full bg-pink-600 hover:bg-pink-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition-colors"
-              >
-                Submit Quiz
-              </button>
-            )}
-            {submitted && (
-              <div className="text-center mt-6 text-xl font-semibold">
-                Your Score: {getScore()} / {quiz.length}
-              </div>
-            )}
-          </form>
+                  
+                  {submitted && (
+                    <div className="pl-10 mt-4">
+                      <div className={`text-sm flex items-center gap-2 ${
+                        (q.type !== 'short-answer' && answers[idx] === q.correctAnswer) || 
+                        (q.type === 'short-answer' && answers[idx]?.trim().toLowerCase() === q.correctAnswer?.trim().toLowerCase())
+                        ? 'text-green-400' : 'text-red-400'
+                      }`}>
+                         {(q.type !== 'short-answer' && answers[idx] === q.correctAnswer) ? <CheckCircle2 size={16} /> : <XCircle size={16} />}
+                         <span className="font-bold">Explanation:</span> {q.explanation}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+              
+              {!submitted ? (
+                <button
+                  type="submit"
+                  className="w-full btn-primary py-4 text-lg shadow-xl shadow-indigo-500/20"
+                >
+                  Submit Quiz
+                </button>
+              ) : (
+                <div className="flex gap-4">
+                    <Link to="/quizzes" className="btn-secondary flex-1 text-center py-3">Back to List</Link>
+                    <button onClick={() => window.location.reload()} className="btn-primary flex-1 py-3 flex items-center justify-center gap-2"><RefreshCw size={18}/> Retry</button>
+                </div>
+              )}
+            </form>
+          </div>
         </div>
       </div>
     </div>
   );
 };
 
-export default Quiz; 
+export default Quiz;

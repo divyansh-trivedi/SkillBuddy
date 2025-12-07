@@ -1,39 +1,45 @@
+require('dotenv').config();
 const express = require('express');
-const cors = require('cors'); // Add this line
+const cors = require('cors');
+const mongoose = require('mongoose');
+
 const app = express();
-// ... other requires (e.g., mongoose, body-parser, etc.)
 
-// **IMPORTANT: Update 'https://your-vercel-frontend-url.vercel.app' with your ACTUAL Vercel URL later**
-const allowedOrigins = [
-  'http://localhost:3000', // For local frontend development
-  'https://skillbuddy-frontend.onrender.com' // This will be your Vercel frontend URL
-];
+// Middleware
+app.use(express.json());
+app.use(cors()); // Allow all origins for now, or configure as needed
 
-app.use(cors({
-  origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.indexOf(origin) === -1) {
-      const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
-      return callback(new Error(msg), false);
-    }
-    return callback(null, true);
-  },
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'], // Ensure all methods your API uses are listed
-  credentials: true // If your frontend sends cookies or authorization headers
-}));
+// Database Connection
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/skillbuddy';
 
-// ... Your database connection (MONGO_URI will come from Render's env vars)
-// Example:
-// mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
-//   .then(() => console.log('MongoDB Connected'))
-//   .catch(err => console.error(err));
+mongoose.connect(MONGODB_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+})
+.then(() => console.log('MongoDB Connected'))
+.catch(err => console.error('MongoDB connection error:', err));
 
-// ... Your API routes and other middleware
-// app.use('/api/users', userRoutes);
-// app.use('/api/products', productRoutes);
+// Routes
+const courseRoutes = require('./routes/courses');
+const quizRoutes = require('./routes/quizzes');
+const roadmapRoutes = require('./routes/roadmaps');
+const userRoutes = require('./routes/users');
+const progressRoutes = require('./routes/progress');
+const aiChatRoutes = require('./routes/aiChat');
 
-const PORT = process.env.PORT || 5000; // Render will provide the PORT
+app.use('/api/courses', courseRoutes);
+app.use('/api/quizzes', quizRoutes);
+app.use('/api/roadmaps', roadmapRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/progress', progressRoutes);
+app.use('/api/ai-chat', aiChatRoutes);
+
+// Health check
+app.get('/', (req, res) => {
+  res.send('SkillBuddy API is running');
+});
+
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });

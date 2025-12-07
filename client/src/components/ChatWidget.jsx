@@ -1,30 +1,22 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { PaperClipIcon } from '@heroicons/react/24/outline';
-
-const AI_AVATAR = (
-  <div className="w-8 h-8 rounded-full bg-pink-600 flex items-center justify-center text-white font-bold mr-2">
-    <span>AI</span>
-  </div>
-);
-const USER_AVATAR = (
-  <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-white font-bold ml-2">
-    <span>U</span>
-  </div>
-);
+import { Bot, User, Send, X, MessageSquare, Sparkles } from "lucide-react";
+import { API_BASE_URL } from '../config';
 
 const ChatWidget = ({ forceOpen = false }) => {
   const [open, setOpen] = useState(forceOpen);
   const [messages, setMessages] = useState([
-    { sender: 'ai', text: 'Hi! How can I help you today?' }
+    { sender: 'ai', text: 'Hi! I am SkillBuddy AI. How can I help you learn today?' }
   ]);
   const [input, setInput] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
     if (open && messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [messages, open]);
+  }, [messages, open, isTyping]);
 
   useEffect(() => {
     if (forceOpen) setOpen(true);
@@ -32,100 +24,113 @@ const ChatWidget = ({ forceOpen = false }) => {
 
   const handleSend = async () => {
     if (input.trim() === '') return;
-    setMessages([...messages, { sender: 'user', text: input }]);
     const userMessage = input;
     setInput('');
+    setMessages(prev => [...prev, { sender: 'user', text: userMessage }]);
+    setIsTyping(true);
+
     try {
-      const res = await fetch('https://skillbuddy-backend.onrender.com/api/ai-chat', {
+      const res = await fetch(`${API_BASE_URL}/api/ai-chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: userMessage })
       });
       const data = await res.json();
-      setMessages(msgs => [...msgs, { sender: 'ai', text: data.response || data.error || 'Sorry, I could not answer.' }]);
+      setIsTyping(false);
+      setMessages(msgs => [...msgs, { sender: 'ai', text: data.response || 'Sorry, I encountered an error.' }]);
     } catch (err) {
-      setMessages(msgs => [...msgs, { sender: 'ai', text: 'Error connecting to AI.' }]);
+      setIsTyping(false);
+      setMessages(msgs => [...msgs, { sender: 'ai', text: 'Error connecting to AI service.' }]);
     }
   };
 
-  // Header content
-  const header = (
-    <div className="bg-slate-800 px-6 py-4 rounded-t-2xl flex items-center gap-3 border-b border-slate-700">
-      <div className="w-10 h-10 flex items-center justify-center text-white text-2xl">
-        <span>🤖</span>
-      </div>
-      <div>
-        <div className="font-bold text-white text-lg">AI Assistant</div>
-        <div className="text-xs text-slate-300">Ask anything about programming, roadmaps, or tech!</div>
-      </div>
-      {!forceOpen && (
-        <button
-          className="ml-auto text-white text-2xl hover:text-blue-400 transition-colors"
-          onClick={() => setOpen(false)}
-          aria-label="Close chat"
-        >
-          ×
-        </button>
-      )}
-    </div>
-  );
-
   return (
-    <div>
+    <>
       {!forceOpen && (
         <button
-          className="fixed bottom-8 right-8 bg-slate-800 text-white rounded-full w-14 h-14 text-2xl shadow-lg flex items-center justify-center hover:bg-slate-700 transition-colors z-50"
+          className="fixed bottom-6 right-6 w-14 h-14 bg-indigo-600 hover:bg-indigo-500 rounded-full shadow-2xl shadow-indigo-500/30 flex items-center justify-center text-white transition-all z-50 hover:scale-110 active:scale-95"
           onClick={() => setOpen(!open)}
-          aria-label="Open chat"
         >
-          💬
+          {open ? <X size={24} /> : <MessageSquare size={24} />}
         </button>
       )}
+
       {open && (
-        <div className={forceOpen ? "w-full flex flex-col" : "fixed bottom-28 right-8 w-80 max-h-[30rem] bg-slate-900 text-white rounded-2xl shadow-2xl flex flex-col z-50 overflow-hidden border border-slate-700"}>
-          {header}
-          <div className="flex-1 px-4 py-4 overflow-y-auto bg-slate-900 flex flex-col gap-3 transition-all duration-300">
+        <div className={forceOpen ? "w-full h-full flex flex-col bg-slate-900 rounded-2xl border border-slate-800" : "fixed bottom-24 right-6 w-96 h-[500px] bg-slate-900 rounded-2xl shadow-2xl border border-slate-800 flex flex-col z-50 overflow-hidden animate-fade-in"}>
+          
+          {/* Header */}
+          <div className="p-4 border-b border-slate-800 bg-slate-900 flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/20">
+              <Bot size={18} />
+            </div>
+            <div>
+              <h3 className="font-bold text-white text-sm">AI Mentor</h3>
+              <p className="text-xs text-indigo-400 flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
+                Online
+              </p>
+            </div>
+            {!forceOpen && (
+                <button onClick={() => setOpen(false)} className="ml-auto text-slate-500 hover:text-white">
+                    <X size={18} />
+                </button>
+            )}
+          </div>
+
+          {/* Messages */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-950/50">
             {messages.map((msg, idx) => (
-              <div
-                key={idx}
-                className={`flex items-end ${msg.sender === 'user' ? 'justify-end' : 'justify-start'} animate-fadeIn`}
-              >
-                {msg.sender === 'ai' && AI_AVATAR}
-                <div
-                  className={`px-4 py-2 rounded-2xl text-base break-words shadow-md transition-all duration-300 ${
-                    msg.sender === 'user'
-                      ? 'bg-blue-500 text-white ml-2 rounded-br-sm'
-                      : 'bg-slate-800 text-white mr-2 rounded-bl-sm'
-                  }`}
-                  style={{ maxWidth: '75%' }}
-                >
+              <div key={idx} className={`flex gap-3 ${msg.sender === 'user' ? 'flex-row-reverse' : ''}`}>
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${msg.sender === 'user' ? 'bg-slate-700' : 'bg-indigo-600/20 text-indigo-400'}`}>
+                  {msg.sender === 'user' ? <User size={14} /> : <Sparkles size={14} />}
+                </div>
+                <div className={`p-3 rounded-2xl max-w-[80%] text-sm leading-relaxed ${
+                  msg.sender === 'user' 
+                    ? 'bg-indigo-600 text-white rounded-br-none' 
+                    : 'bg-slate-800 text-slate-200 border border-slate-700 rounded-bl-none'
+                }`}>
                   {msg.text}
                 </div>
-                {msg.sender === 'user' && USER_AVATAR}
               </div>
             ))}
-            <div ref={messagesEndRef}/>
+            {isTyping && (
+              <div className="flex gap-3">
+                 <div className="w-8 h-8 rounded-full bg-indigo-600/20 text-indigo-400 flex items-center justify-center shrink-0"><Sparkles size={14} /></div>
+                 <div className="bg-slate-800 px-4 py-3 rounded-2xl rounded-bl-none border border-slate-700 flex gap-1 items-center">
+                    <span className="w-1.5 h-1.5 bg-slate-500 rounded-full animate-bounce"></span>
+                    <span className="w-1.5 h-1.5 bg-slate-500 rounded-full animate-bounce delay-100"></span>
+                    <span className="w-1.5 h-1.5 bg-slate-500 rounded-full animate-bounce delay-200"></span>
+                 </div>
+              </div>
+            )}
+            <div ref={messagesEndRef} />
           </div>
-          <div className="flex px-4 py-3 bg-slate-800 border-t border-slate-700 items-center gap-2 shrink-0 mt-100">
-            <input
-              className="flex-1 px-3 py-2 rounded-lg bg-slate-900 text-white border border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              type="text"
-              value={input}
-              onChange={e => setInput(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && handleSend()}
-              placeholder="Type your message..."
-            />
-            <button
-              className="bg-pink-600 hover:bg-pink-700 text-white rounded-lg px-4 py-2 font-semibold transition-colors shadow-md cursor-pointer"
-              onClick={handleSend}
-            >
-              Send
-            </button>
+
+          {/* Input */}
+          <div className="p-4 border-t border-slate-800 bg-slate-900">
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+                placeholder="Ask about code..."
+                className="flex-1 bg-slate-800 border-transparent focus:border-indigo-500 focus:ring-0 rounded-lg text-sm text-white placeholder-slate-500 px-4 py-2.5 transition-all"
+              />
+              <button 
+                onClick={handleSend}
+                className="bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg p-2.5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={!input.trim()}
+              >
+                <Send size={18} />
+              </button>
+            </div>
           </div>
+
         </div>
       )}
-    </div>
+    </>
   );
 };
 
-export default ChatWidget; 
+export default ChatWidget;

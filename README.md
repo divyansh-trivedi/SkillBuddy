@@ -1,51 +1,96 @@
-# 🚀 SkillBuddy 🎓💻
+# SkillBuddy
 
-**Your personalized skill-building companion – a full-stack learning platform combining modern web technologies and the power of AI to help users learn smarter, track their progress, and stay motivated.**
+SkillBuddy is an AI-powered learning platform designed to help users master new skills through structured roadmaps, quizzes, and AI mentorship.
 
----
+## Tech Stack
 
-## ✨ Why SkillBuddy?
+-   **Frontend:** React, Vite, Tailwind CSS (v4), Framer Motion, Recharts
+-   **Backend:** Node.js, Express, Mongoose
+-   **Database:** MongoDB 
 
-SkillBuddy was created to empower learners with structured guidance, interactive tools, and smart AI assistance. It brings together curated learning resources, visual progress tracking, and personalized mentorship—all in one place.
+## Features
 
----
+-   **Course Library:** Browse a wide range of courses in Frontend, Backend, Data Science, and more.
+-   **Interactive Roadmaps:** Track your learning progress with step-by-step roadmaps.
+-   **Quizzes:** Test your knowledge with quizzes for each course.
+-   **AI Chat:** Get instant answers and mentorship from an AI buddy.
+-   **Dashboard:** Visualize your progress and see upcoming tasks.
+-   **User Authentication:** Secure login and signup.
 
-## 🌟 Key Features
+## Setup Instructions
 
-- 🔍 **Personalized Learning Guidance** – AI Chat Widget powered by Google Gemini API
-- 📚 **Curated Resources & Roadmaps** – Structured learning paths for different skills
-- 🧠 **Interactive Quizzes** – Test knowledge and monitor progress
-- 📊 **Progress Tracking** – Visual charts showing achievements and milestones
-- 🔐 **Secure Authentication** – Login/signup using JWT with protected routes
+### Prerequisites
 
----
+-   Node.js (v14+)
+-   MongoDB 
 
-## 🔧 Tech Stack
+### 1. Clone the Repository
 
-| Category        | Technology                                | Purpose/Use                                       |
-|----------------|--------------------------------------------|--------------------------------------------------|
-| Frontend       | React (Vite), Tailwind CSS, React Router   | UI, navigation, and styling                      |
-| Backend        | Node.js, Express.js                        | REST API development (auth, quiz, roadmap, etc.) |
-| Authentication | JWT (JSON Web Tokens)                      | Secure session handling and route protection     |
-| AI Integration | Google Gemini API                          | AI chat guidance                                 |
-| Hosting        | Vercel (Frontend), Render (Backend)        | Deployment platforms                             |
+```bash
+git clone <repository-url>
+cd SkillBuddy
+```
 
----
+### 2. Backend Setup
 
-## 💡 What I Learned
+1.  Navigate to the server directory:
+    ```bash
+    cd server
+    ```
+2.  Install dependencies:
+    ```bash
+    npm install
+    ```
+3.  Create a `.env` file in the `server` directory (or rename `.env.example`):
+    ```env
+    MONGODB_URI=your_mongodb_connection_string
+    PORT=5000
+    JWT_SECRET=your_jwt_secret_key
+    ```
+    *Note: If running locally without a .env file, it defaults to `mongodb://localhost:27017/skillbuddy`.*
 
-- Complete **MERN Stack** project development
-- Integration of **REST APIs** and connecting frontend to backend
-- Best practices for **authentication & authorization**
-- **AI Integration** using third-party APIs (Google Gemini)
-- Deployment using **Render**
-- Enhancing **UI/UX** with Tailwind CSS
+4.  **Seed the Database:**
+    Populate the database with initial courses, quizzes, and roadmaps:
+    ```bash
+    node scripts/seed.js
+    ```
 
----
+5.  Start the server:
+    ```bash
+    npm start
+    ```
 
-## 🧩 Future Improvements
+### 3. Frontend Setup
 
-- Cleaner codebase and improved folder structure
-- More interactive and visually appealing dashboards
-- Expand AI support to offer full adaptive learning plans
-- Add gamification elements for motivation
+1.  Open a new terminal and navigate to the client directory:
+    ```bash
+    cd client
+    ```
+2.  Install dependencies:
+    ```bash
+    npm install
+    ```
+3.  Start the development server:
+    ```bash
+    npm run dev
+    ```
+
+4.  Open your browser at `http://localhost:5173`.
+
+## Project Structure
+
+-   `client/`: Frontend React application.
+-   `server/`: Backend Express API.
+    -   `models/`: Mongoose schemas (User, Course, Quiz, Roadmap, UserProgress).
+    -   `routes/`: API endpoints.
+    -   `scripts/`: Database seeding scripts.
+
+## API Endpoints
+
+-   `GET /api/courses`: Get all courses.
+-   `GET /api/quizzes`: Get available quizzes.
+-   `GET /api/quizzes/:courseTitle`: Get specific quiz.
+-   `GET /api/roadmaps/:courseTitle`: Get specific roadmap.
+-   `GET /api/progress`: Get user progress (Auth required).
+-   `POST /api/users/register`: Register a new user.
+-   `POST /api/users/login`: Login.

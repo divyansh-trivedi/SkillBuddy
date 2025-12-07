@@ -1,25 +1,39 @@
 @import "tailwindcss";
 
+@layer base {
+  body {
+    @apply bg-slate-950 text-slate-50 font-sans antialiased;
+  }
+}
+
 @layer utilities {
+  .glass {
+    @apply bg-slate-900/70 backdrop-blur-md border border-slate-800;
+  }
+  
+  .glass-card {
+    @apply bg-slate-900/50 backdrop-blur-sm border border-slate-800 hover:border-slate-700 transition-all duration-300;
+  }
+
+  .btn-primary {
+    @apply bg-indigo-600 hover:bg-indigo-500 text-white font-medium px-4 py-2 rounded-lg transition-all duration-200 shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/40;
+  }
+
+  .btn-secondary {
+    @apply bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium px-4 py-2 rounded-lg border border-slate-700 transition-all duration-200;
+  }
+
+  .btn-ghost {
+    @apply text-slate-400 hover:text-white font-medium px-4 py-2 transition-colors duration-200;
+  }
+
+  /* Custom Animations */
   .animate-fade-in {
-    animation: fadeIn 1s ease-in;
+    animation: fadeIn 0.5s ease-out forwards;
   }
-  .animate-slide-in-left {
-    animation: slideInLeft 1s ease-out;
-  }
-  .animate-slide-in-right {
-    animation: slideInRight 1s ease-out;
-  }
+  
   @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-  }
-  @keyframes slideInLeft {
-    from { opacity: 0; transform: translateX(-40px); }
-    to { opacity: 1; transform: translateX(0); }
-  }
-  @keyframes slideInRight {
-    from { opacity: 0; transform: translateX(40px); }
-    to { opacity: 1; transform: translateX(0); }
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
   }
 }
